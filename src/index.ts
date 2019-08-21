@@ -69,6 +69,59 @@ const orders = [
     total: 5000,
     orderType: "lmt",
     price: 39
+  },
+  {
+    side: "sell",
+    total: 5000,
+    orderType: "lmt",
+    price: 55
+  },
+  {
+    side: "sell",
+    total: 5000,
+    orderType: "lmt",
+    price: 59
+  },
+  {
+    side: "sell",
+    total: 2000,
+    orderType: "lmt",
+    price: 52
+  },
+  {
+    side: "buy",
+    total: 1000,
+    orderType: "lmt",
+    price: 50
+  },
+  {
+    side: "buy",
+    total: 2000,
+    orderType: "lmt",
+    price: 48
+  },
+  {
+    side: "sell",
+    total: 1000,
+    orderType: "lmt",
+    price: 51
+  },
+  {
+    side: "buy",
+    total: 5000,
+    orderType: "lmt",
+    price: 46
+  },
+  {
+    side: "sell",
+    total: 5000,
+    orderType: "mrk"
+  },
+  {
+    side: "buy",
+    total: 5000,
+    orderType: "lmt",
+    price: 53
   }
 ];
 
