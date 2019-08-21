@@ -71,6 +71,13 @@ const orders = [
     price: 39
   }
 ];
+
+/**
+ * @description
+ * orders$ is a stream of stock orders. It uses the prepopulated `orders` array
+ * to produce a simulated stock market stream where orders are being received every
+ * 2 secs.
+ */
 const index = 0;
 const orders$ = interval(2000)
   .pipe(
