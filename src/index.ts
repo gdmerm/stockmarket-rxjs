@@ -1,5 +1,5 @@
 import { of, from, interval } from "rxjs";
-import { map, tap, delay, mergeMap, takeUntil } from "rxjs/operators";
+import { map, tap, delay, mergeMap, takeUntil, take } from "rxjs/operators";
 
 document.getElementById("app").innerHTML = `
 <h1>Hello Parcel!</h1>
@@ -26,8 +26,9 @@ const traders = {
 interface StockOrder {
   side: "sell" | "buy";
   total: number;
-  orderType: "lmt" | "mrk";
-  price: number;
+  orderType?: "lmt" | "mrk";
+  price?: number;
+  trader: string;
 }
 
 interface Level2 {
@@ -35,7 +36,7 @@ interface Level2 {
   sell: Array<StockOrder>;
 }
 
-const level2: Level2 = {
+const orderBook: Level2 = {
   buy: [],
   sell: []
 };
@@ -52,76 +53,87 @@ const addStockOrder = ({
   orderType = "lmt",
   price = 0
 }) => {
-  const { [side]: orders } = level2;
+  const { [side]: orders } = orderBook;
   const order = { side, total, orderType, price };
-  level2[side] = [...orders, order];
+  orderBook[side] = [...orders, order];
 };
 
-const orders = [
+const orders: Array<StockOrder> = [
   {
     side: "buy",
     total: 3000,
     orderType: "lmt",
-    price: 41
+    price: 41,
+    trader: "p1"
   },
   {
     side: "buy",
     total: 5000,
     orderType: "lmt",
-    price: 39
+    price: 39,
+    trader: "p2"
   },
   {
     side: "sell",
     total: 5000,
     orderType: "lmt",
-    price: 55
+    price: 55,
+    trader: "p2"
   },
   {
     side: "sell",
     total: 5000,
     orderType: "lmt",
-    price: 59
+    price: 59,
+    trader: "p2"
   },
   {
     side: "sell",
     total: 2000,
     orderType: "lmt",
-    price: 52
+    price: 52,
+    trader: "p3"
   },
   {
     side: "buy",
     total: 1000,
     orderType: "lmt",
-    price: 50
+    price: 50,
+    trader: "p5"
   },
   {
     side: "buy",
     total: 2000,
     orderType: "lmt",
-    price: 48
+    price: 48,
+    trader: "p6"
   },
   {
     side: "sell",
     total: 1000,
     orderType: "lmt",
-    price: 51
+    price: 51,
+    trader: "p7"
   },
   {
     side: "buy",
     total: 5000,
     orderType: "lmt",
-    price: 46
+    price: 46,
+    trader: "p8"
   },
   {
     side: "sell",
     total: 5000,
-    orderType: "mrk"
+    orderType: "mrk",
+    trader: "p9"
   },
   {
     side: "buy",
     total: 5000,
     orderType: "lmt",
-    price: 53
+    price: 53,
+    trader: "p10"
   }
 ];
 
@@ -135,6 +147,7 @@ const index = 0;
 const orders$ = interval(2000)
   .pipe(
     map(() => orders[index]),
-    tap(() => index++)
+    tap(() => index++),
+    take(orders.length)
   )
   .subscribe(console.log);
