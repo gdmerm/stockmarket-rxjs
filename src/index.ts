@@ -1,5 +1,7 @@
-import { of, from, interval } from "rxjs";
+import { of, from, interval, zip } from "rxjs";
 import { map, tap, delay, mergeMap, takeUntil, take } from "rxjs/operators";
+import flow from "lodash/flow";
+import curry from "lodash/curry";
 
 document.getElementById("app").innerHTML = `
 <h1>Hello Parcel!</h1>
@@ -36,28 +38,79 @@ interface Level2 {
   sell: Array<StockOrder>;
 }
 
+interface TimeOfSales {
+  timestamp: Date;
+  price: number;
+}
+
+/**
+ * The level2 orderbook.
+ * - Buyers are sorted by descending price order (highest price first)
+ * - Sellers are sorted by ascending price order (lowest price first)
+ * The idea is that buyers can buy at the most affordable price and
+ * sellers can sell at the best price.
+ */
 const orderBook: Level2 = {
   buy: [],
   sell: []
 };
+
+const ToS = [];
 
 const getStockFloat = () =>
   Object.entries(traders).reduce(
     (stockCount, nextStockCount) => stockCount + nextStockCount[1],
     0
   );
+const getLevelOne = () => [orderBook.buy[0], orderBook.sell[0]];
+const getOrdersBySide = side => orderBook[side];
 
-const addStockOrder = ({
-  side = "buy",
-  total = 0,
-  orderType = "lmt",
-  price = 0
-}) => {
-  const { [side]: orders } = orderBook;
-  const order = { side, total, orderType, price };
-  orderBook[side] = [...orders, order];
+function sortBookOrders(side, orders) {
+  orderBook[side] = orders.sort((prev: StockOrder, next: StockOrder) =>
+    side === "buy" ? next.price - prev.price : prev.price - next.price
+  );
+}
+
+const addStockOrder = (order: StockOrder) => {
+  console.log("=== incoming order ===");
+  const { side } = order;
+  const mergeOrdersWith = curry((order, orderBookOrders) => [
+    ...orderBookOrders,
+    order
+  ]);
+  const sortBookOrdersOf = curry(sortBookOrders);
+
+  flow([getOrdersBySide, mergeOrdersWith(order), sortBookOrdersOf(side)])(side);
 };
 
+/**
+ * @description
+ * unfinished implementation of the reconciliation algorithm
+ * that takes place on Level2 on a real stock exchange. The
+ * algorithm needs to match buyers and sellers, perform the
+ * transactions (execution) and finally update the ToS
+ */
+function reconciliate() {
+  const [topBuyer] = orderBook.buy;
+  orderBook.sell = orderBook.sell
+    .map(sellOrder => {
+      if (topBuyer.price >= sellOrder.price) {
+        console.log("purchasing stock!");
+        // pending implementation
+      } else {
+        return sellOrder;
+      }
+    })
+    .filter(x => x);
+}
+
+/**
+ * This is used to simulate traders adding orders.
+ * Later we will be using a real form where a trader can
+ * add stock orders, so this array will no longer be needed.
+ * (our stream will come by the click event stream on the from
+ * submit button).
+ */
 const orders: Array<StockOrder> = [
   {
     side: "buy",
@@ -143,11 +196,10 @@ const orders: Array<StockOrder> = [
  * to produce a simulated stock market stream where orders are being received every
  * 2 secs.
  */
-const index = 0;
-const orders$ = interval(2000)
-  .pipe(
-    map(() => orders[index]),
-    tap(() => index++),
-    take(orders.length)
-  )
-  .subscribe(console.log);
+const ordersSub = zip(interval(800), from(orders))
+  .pipe(map(([, o]) => o))
+  .subscribe(
+    addStockOrder,
+    () => {},
+    () => console.log(`OrderBook: `, orderBook)
+  );
