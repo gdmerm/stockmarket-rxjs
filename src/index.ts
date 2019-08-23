@@ -47,8 +47,7 @@ const orderBook: Level2 = {
 /**
  * The ToS. This will hold records of all executions.
  */
-const ToS = [];
-
+let ToS = [];
 const getLevelOne = () => [orderBook.buy[0], orderBook.sell[0]];
 const getOrdersBySide = side => orderBook[side];
 
@@ -189,6 +188,13 @@ const orders: Array<StockOrder> = [
   },
   {
     side: "buy",
+    total: 1000,
+    orderType: "lmt",
+    price: 52,
+    trader: "p5"
+  },
+  {
+    side: "buy",
     total: 2000,
     orderType: "lmt",
     price: 48,
@@ -196,7 +202,7 @@ const orders: Array<StockOrder> = [
   },
   {
     side: "sell",
-    total: 6000,
+    total: 5000,
     orderType: "lmt",
     price: 51,
     trader: "p7"
