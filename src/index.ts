@@ -12,19 +12,6 @@ document.getElementById("app").innerHTML = `
 </div>
 `;
 
-const traders = {
-  p1: 40000,
-  p2: 10000,
-  p3: 2000,
-  p4: 0,
-  p5: 2000,
-  p6: 5000,
-  p7: 1000,
-  p8: 0,
-  p9: 10000,
-  p10: 5000
-};
-
 interface StockOrder {
   side: "sell" | "buy";
   total: number;
@@ -43,6 +30,8 @@ interface TimeOfSales {
   price: number;
 }
 
+type TradeSide = 'buy' | 'sell';
+
 /**
  * The level2 orderbook.
  * - Buyers are sorted by descending price order (highest price first)
@@ -55,24 +44,24 @@ const orderBook: Level2 = {
   sell: []
 };
 
+/**
+ * The ToS. This will hold records of all executions.
+ */
 const ToS = [];
 
-const getStockFloat = () =>
-  Object.entries(traders).reduce(
-    (stockCount, nextStockCount) => stockCount + nextStockCount[1],
-    0
-  );
 const getLevelOne = () => [orderBook.buy[0], orderBook.sell[0]];
 const getOrdersBySide = side => orderBook[side];
 
-function sortBookOrders(side, orders) {
-  orderBook[side] = orders.sort((prev: StockOrder, next: StockOrder) =>
-    side === "buy" ? next.price - prev.price : prev.price - next.price
-  );
-}
 
-const addStockOrder = (order: StockOrder) => {
+function addStockOrder(order: StockOrder) {
   console.log("=== incoming order ===");
+
+  function sortBookOrders(side, orders) {
+    orderBook[side] = orders.sort((prev: StockOrder, next: StockOrder) =>
+      side === "buy" ? next.price - prev.price : prev.price - next.price
+    );
+  }
+
   const { side } = order;
   const mergeOrdersWith = curry((order, orderBookOrders) => [
     ...orderBookOrders,
@@ -80,8 +69,25 @@ const addStockOrder = (order: StockOrder) => {
   ]);
   const sortBookOrdersOf = curry(sortBookOrders);
 
-  flow([getOrdersBySide, mergeOrdersWith(order), sortBookOrdersOf(side)])(side);
+  flow([
+    getOrdersBySide, 
+    mergeOrdersWith(order), 
+    sortBookOrdersOf(side)
+  ])(side);
 };
+
+function updateTradeOrderAt(side: TradeSide, trade: StockOrder) {
+  let newArray = orderBook[side].slice();
+  newArray[0] = {...trade};
+  orderBook[side] = newArray;
+}
+
+function removeTradeFrom(side: TradeSide) {
+  let newArray = orderBook[side].slice();
+  const trade = newArray.splice(0, 1);
+  orderBook[side] = newArray;
+  return trade;
+}
 
 /**
  * @description
@@ -93,17 +99,42 @@ const addStockOrder = (order: StockOrder) => {
 function reconciliate() {
   const [topBuyer] = orderBook.buy;
   let { total: topBuyerTotal } = topBuyer;
-  orderBook.sell = orderBook.sell
-    .map(sellOrder => {
-      if (topBuyer.price >= sellOrder.price) {
-        topBuyerTotal -= sellOrder.total;
-        return { ...sellOrder, total: sellOrder.total - topBuyer.total };
+
+  const canExecuteTrade = (buy, sell) => buy.price >= sell.price;
+  const purchaseStockFrom = seller => topBuyerTotal -= seller.total;
+  const purchaseIsPartial = (buy, sell) => sell.total - buy.total > 0;
+
+  console.log('reconciliating with buyer: ', topBuyer);
+
+  for (let i=0,_len = orderBook.sell.length; i < _len; i++) {
+    const [topSeller] = orderBook.sell;
+    if (canExecuteTrade(topBuyer, topSeller)) {
+      purchaseStockFrom(topSeller);
+      if (purchaseIsPartial(topBuyer, topSeller)) {
+        //partial sell
+        console.log(`Seller has more stocks than demand. Partially selling ${topBuyer.total} stocks out of ${topSeller.total}`);
+        updateTradeOrderAt('sell', { ...topSeller, total: topSeller.total - topBuyer.total });
       } else {
-        //do nothing, this seller wants to sell at higher prices
-        return sellOrder;
+        //seller has sold out
+        console.log(`Seller will be sold out. Selling ${topSeller.total} stocks and removing seller from orderBook.`);
+        removeTradeFrom('sell');
       }
-    })
-    .filter(x => x);
+      if (topBuyerTotal <= 0) break;
+    } else {
+      //do nothing, this seller wants to sell at higher prices
+      console.log('This seller is too expensive for this buyer. Ending reconciliation.');
+      break;
+    }    
+  }
+
+  if (topBuyerTotal <= 0) {
+    console.log('buyer was bought out. Trying the next buyer');
+    removeTradeFrom('buy');
+    reconciliate();
+  } else if (topBuyer.total !== topBuyerTotal) {
+    console.log(`buyer was partially filled. Waiting for next trades...`);
+    updateTradeOrderAt('buy', {...topBuyer, total: topBuyerTotal});
+  }
 }
 
 /**
@@ -165,7 +196,7 @@ const orders: Array<StockOrder> = [
   },
   {
     side: "sell",
-    total: 1000,
+    total: 6000,
     orderType: "lmt",
     price: 51,
     trader: "p7"
@@ -198,13 +229,16 @@ const orders: Array<StockOrder> = [
  * to produce a simulated stock market stream where orders are being received every
  * 2 secs.
  */
-const ordersSub = zip(interval(100), from(orders))
+const ordersSub = zip(interval(200), from(orders))
   .pipe(map(([, o]) => o))
   .subscribe(
-    addStockOrder,
+    flow([
+      addStockOrder,
+      // reconciliate
+    ]),
     () => {},
     () => {
-      //reconciliate();
+      reconciliate();
       console.log(`OrderBook: `, orderBook);
     }
   );

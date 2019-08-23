@@ -1,0 +1,66 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	0.0.0	/920e791/
+0	tsconfig.json	/^      "es6",$/;"	s	array:compilerOptions.lib
+1	tsconfig.json	/^      "dom"$/;"	s	array:compilerOptions.lib
+Level2	src/index.ts	/^interface Level2 {$/;"	i
+StockOrder	src/index.ts	/^interface StockOrder {$/;"	i
+TimeOfSales	src/index.ts	/^interface TimeOfSales {$/;"	i
+ToS	src/index.ts	/^const ToS = [];$/;"	C
+addStockOrder	src/index.ts	/^const addStockOrder = (order: StockOrder) => {$/;"	C
+allowJs	tsconfig.json	/^    "allowJs": true,$/;"	b	object:compilerOptions
+app	index.html	/^	<div id="app"><\/div>$/;"	I
+build	package.json	/^    "build": "parcel build index.html"$/;"	s	object:scripts
+buy	src/index.ts	/^  buy: Array<StockOrder>;$/;"	p	interface:Level2
+compilerOptions	tsconfig.json	/^  "compilerOptions": {$/;"	o
+console	src/index.ts	/^  console.log("=== incoming order ===");$/;"	C
+const	src/index.ts	/^  const mergeOrdersWith = curry((order, orderBookOrders) => [$/;"	C
+const	src/index.ts	/^  const sortBookOrdersOf = curry(sortBookOrders);$/;"	C
+const	src/index.ts	/^  const { side } = order;$/;"	C
+dependencies	package.json	/^  "dependencies": {$/;"	o
+description	package.json	/^  "description": "Simple Parcel Sandbox",$/;"	s
+devDependencies	package.json	/^  "devDependencies": {$/;"	o
+esModuleInterop	tsconfig.json	/^    "esModuleInterop": true,$/;"	b	object:compilerOptions
+flow	src/index.ts	/^  flow([getOrdersBySide, mergeOrdersWith(order), sortBookOrdersOf(side)])(side);$/;"	C
+getLevelOne	src/index.ts	/^const getLevelOne = () => [orderBook.buy[0], orderBook.sell[0]];$/;"	C
+getOrdersBySide	src/index.ts	/^const getOrdersBySide = side => orderBook[side];$/;"	C
+getStockFloat	src/index.ts	/^const getStockFloat = () =>$/;"	C
+jsx	tsconfig.json	/^    "jsx": "preserve",$/;"	s	object:compilerOptions
+lib	tsconfig.json	/^    "lib": [$/;"	a	object:compilerOptions
+lodash	package.json	/^    "lodash": "4.17.15",$/;"	s	object:dependencies
+main	package.json	/^  "main": "index.html",$/;"	s
+mergeOrdersWith	src/index.ts	/^  const mergeOrdersWith = curry((order, orderBookOrders) => [$/;"	C
+module	tsconfig.json	/^    "module": "commonjs",$/;"	s	object:compilerOptions
+moduleResolution	tsconfig.json	/^    "moduleResolution": "node"$/;"	s	object:compilerOptions
+name	package.json	/^  "name": "parcel-sandbox",$/;"	s
+orderBook	src/index.ts	/^const getLevelOne = () => [orderBook.buy[0], orderBook.sell[0]];$/;"	C
+orderBook	src/index.ts	/^const getOrdersBySide = side => orderBook[side];$/;"	C
+orderBook	src/index.ts	/^const orderBook: Level2 = {$/;"	C
+orderType	src/index.ts	/^  orderType?: "lmt" | "mrk";$/;"	p	interface:StockOrder
+orders	src/index.ts	/^const orders: Array<StockOrder> = [$/;"	C
+ordersSub	src/index.ts	/^const ordersSub = zip(interval(100), from(orders))$/;"	C
+parcel-bundler	package.json	/^    "parcel-bundler": "^1.6.1"$/;"	s	object:devDependencies
+price	src/index.ts	/^  price: number;$/;"	p	interface:TimeOfSales
+price	src/index.ts	/^  price?: number;$/;"	p	interface:StockOrder
+reconciliate	src/index.ts	/^function reconciliate() {$/;"	f
+rootDir	tsconfig.json	/^    "rootDir": "src",$/;"	s	object:compilerOptions
+rxjs	package.json	/^    "rxjs": "6.5.2"$/;"	s	object:dependencies
+scripts	package.json	/^  "scripts": {$/;"	o
+sell	src/index.ts	/^  sell: Array<StockOrder>;$/;"	p	interface:Level2
+side	src/index.ts	/^  const { side } = order;$/;"	C
+side	src/index.ts	/^  side: "sell" | "buy";$/;"	p	interface:StockOrder
+side	src/index.ts	/^const getOrdersBySide = side => orderBook[side];$/;"	C
+sortBookOrders	src/index.ts	/^function sortBookOrders(side, orders) {$/;"	f
+sortBookOrdersOf	src/index.ts	/^  const sortBookOrdersOf = curry(sortBookOrders);$/;"	C
+sourceMap	tsconfig.json	/^    "sourceMap": true,$/;"	b	object:compilerOptions
+start	package.json	/^    "start": "parcel index.html --open",$/;"	s	object:scripts
+timestamp	src/index.ts	/^  timestamp: Date;$/;"	p	interface:TimeOfSales
+topBuyer	src/index.ts	/^  const [topBuyer] = orderBook.buy;$/;"	C	function:reconciliate
+total	src/index.ts	/^  total: number;$/;"	p	interface:StockOrder
+trader	src/index.ts	/^  trader: string;$/;"	p	interface:StockOrder
+traders	src/index.ts	/^const traders = {$/;"	C
+version	package.json	/^  "version": "1.0.0",$/;"	s
