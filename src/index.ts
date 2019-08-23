@@ -103,7 +103,7 @@ function reconciliate() {
   const purchaseStockFrom = seller => topBuyerTotal -= seller.total;
   const purchaseIsPartial = (buy, sell) => sell.total - buy.total > 0;
 
-  console.log('reconciliating with buyer: ', topBuyer);
+  // console.log('reconciliating with buyer: ', topBuyer);
 
   for (let i=0,_len = orderBook.sell.length; i < _len; i++) {
     const [topSeller] = orderBook.sell;
@@ -111,19 +111,19 @@ function reconciliate() {
       purchaseStockFrom(topSeller);
       if (purchaseIsPartial(topBuyer, topSeller)) {
         //partial sell
-        console.log(`Seller has more stocks than demand. Partially selling ${topBuyer.total} stocks out of ${topSeller.total}`);
+        // console.log(`Seller has more stocks than demand. Partially selling ${topBuyer.total} stocks out of ${topSeller.total}`);
         updateTradeOrderAt('sell', { ...topSeller, total: topSeller.total - topBuyer.total });
       } else {
         //seller has sold out
-        console.log(`Seller will be sold out. Selling ${topSeller.total} stocks and removing seller from orderBook.`);
+        // console.log(`Seller will be sold out. Selling ${topSeller.total} stocks and removing seller from orderBook.`);
         removeTradeFrom('sell');
       }
       if (topBuyerTotal <= 0) break;
     } else {
       //do nothing, this seller wants to sell at higher prices
-      console.log('This seller is too expensive for this buyer. Ending reconciliation.');
+      // console.log('This seller is too expensive for this buyer. Ending reconciliation.');
       break;
-    }    
+    }
   }
 
   if (topBuyerTotal <= 0) {
@@ -243,5 +243,5 @@ const ordersSub = zip(interval(2000), from(orders))
       reconciliate
     ]),
     () => {},
-    () => console.log(`OrderBook: `, orderBook);
+    () => console.log(`OrderBook: `, orderBook)
   );
