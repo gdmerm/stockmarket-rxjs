@@ -53,7 +53,7 @@ const getOrdersBySide = side => orderBook[side];
 
 
 function addStockOrder(order: StockOrder) {
-  console.log("=== incoming order ===");
+  console.log("=== incoming order ===", order);
 
   function sortBookOrders(side, orders) {
     orderBook[side] = orders.sort((prev: StockOrder, next: StockOrder) =>
@@ -101,42 +101,46 @@ function removeTradeFrom(side: TradeSide) {
  */
 function reconciliate() {
   const [topBuyer] = orderBook.buy;
-  let { total: topBuyerTotal } = topBuyer;
+  let { total: totalStockRemainingToBuy } = topBuyer;
 
   const canExecuteTrade = (buy, sell) => buy.price >= sell.price;
-  const purchaseStockFrom = seller => topBuyerTotal -= seller.total;
-  const purchaseIsPartial = (buy, sell) => sell.total - buy.total > 0;
+  const purchaseStockFrom = seller => totalStockRemainingToBuy -= seller.total;
+  const sellerSoldOut = (buy, sell) => sell.total - buy.total <= 0;
+  const buyerBuyOut = () => totalStockRemainingToBuy <= 0;
+  const buyerHasMoreStocksToBuy = (buyer) => totalStockRemainingToBuy < buyer.total;
+  
+  function updateSellersWith(seller) {
+    console.log(`Asking ${topBuyer.total} stocks out of ${seller.total}`);
+    updateTradeOrderAt('sell', { ...seller, total: seller.total - topBuyer.total });
+    if (sellerSoldOut(topBuyer, seller)) {
+      console.log(`Seller was sold out. Selling ${seller.total} stocks and removing seller from orderBook.`);
+      removeTradeFrom('sell');
+    }
+  }
 
-  // console.log('reconciliating with buyer: ', topBuyer);
+  console.log('reconciliating with buyer: ', topBuyer);
 
   for (let i=0,_len = orderBook.sell.length; i < _len; i++) {
     const [topSeller] = orderBook.sell;
     if (canExecuteTrade(topBuyer, topSeller)) {
       purchaseStockFrom(topSeller);
-      if (purchaseIsPartial(topBuyer, topSeller)) {
-        //partial sell
-        // console.log(`Seller has more stocks than demand. Partially selling ${topBuyer.total} stocks out of ${topSeller.total}`);
-        updateTradeOrderAt('sell', { ...topSeller, total: topSeller.total - topBuyer.total });
-      } else {
-        //seller has sold out
-        // console.log(`Seller will be sold out. Selling ${topSeller.total} stocks and removing seller from orderBook.`);
-        removeTradeFrom('sell');
-      }
-      if (topBuyerTotal <= 0) break;
+      updateSellersWith(topSeller);
+      //this buyer needs no more sellers.
+      if (buyerBuyOut()) break;
     } else {
       //do nothing, this seller wants to sell at higher prices
-      // console.log('This seller is too expensive for this buyer. Ending reconciliation.');
+      console.log('This seller is too expensive for this buyer. Ending reconciliation.');
       break;
     }
   }
 
-  if (topBuyerTotal <= 0) {
-    // console.log('buyer was bought out. Trying the next buyer');
+  if (buyerBuyOut()) {
+    console.log('buyer was bought out. Trying the next buyer');
     removeTradeFrom('buy');
     reconciliate();
-  } else if (topBuyer.total !== topBuyerTotal) {
-    // console.log(`buyer was partially filled. Waiting for next trades...`);
-    updateTradeOrderAt('buy', {...topBuyer, total: topBuyerTotal});
+  } else if (buyerHasMoreStocksToBuy(topBuyer)) {
+    console.log(`buyer was partially filled. Waiting for next trades...`);
+    updateTradeOrderAt('buy', {...topBuyer, total: totalStockRemainingToBuy});
   }
 }
 
@@ -166,7 +170,7 @@ const orders: Array<StockOrder> = [
     side: "sell",
     total: 5000,
     orderType: "lmt",
-    price: 55,
+    price: 30,
     trader: "p2"
   },
   {
@@ -230,7 +234,7 @@ const orders: Array<StockOrder> = [
     orderType: "lmt",
     price: 53,
     trader: "p10"
-  }
+  },
 ];
 
 /**
@@ -239,7 +243,7 @@ const orders: Array<StockOrder> = [
  * to produce a simulated stock market stream where orders are being received every
  * 2 secs.
  */
-const ordersSub = zip(interval(2000), from(orders))
+const ordersSub = zip(interval(200), from(orders))
   .pipe(map(([, o]) => o))
   .subscribe(
     flow([
