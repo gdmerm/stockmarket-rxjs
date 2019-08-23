@@ -92,12 +92,14 @@ const addStockOrder = (order: StockOrder) => {
  */
 function reconciliate() {
   const [topBuyer] = orderBook.buy;
+  let { total: topBuyerTotal } = topBuyer;
   orderBook.sell = orderBook.sell
     .map(sellOrder => {
       if (topBuyer.price >= sellOrder.price) {
-        console.log("purchasing stock!");
-        // pending implementation
+        topBuyerTotal -= sellOrder.total;
+        return { ...sellOrder, total: sellOrder.total - topBuyer.total };
       } else {
+        //do nothing, this seller wants to sell at higher prices
         return sellOrder;
       }
     })
@@ -108,7 +110,7 @@ function reconciliate() {
  * This is used to simulate traders adding orders.
  * Later we will be using a real form where a trader can
  * add stock orders, so this array will no longer be needed.
- * (our stream will come by the click event stream on the from
+ * (our stream will come by the click event stream on the form
  * submit button).
  */
 const orders: Array<StockOrder> = [
@@ -196,10 +198,13 @@ const orders: Array<StockOrder> = [
  * to produce a simulated stock market stream where orders are being received every
  * 2 secs.
  */
-const ordersSub = zip(interval(800), from(orders))
+const ordersSub = zip(interval(100), from(orders))
   .pipe(map(([, o]) => o))
   .subscribe(
     addStockOrder,
     () => {},
-    () => console.log(`OrderBook: `, orderBook)
+    () => {
+      //reconciliate();
+      console.log(`OrderBook: `, orderBook);
+    }
   );
