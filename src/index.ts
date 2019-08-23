@@ -94,6 +94,10 @@ function removeTradeFrom(side: TradeSide) {
  * that takes place on Level2 on a real stock exchange. The
  * algorithm needs to match buyers and sellers, perform the
  * transactions (execution) and finally update the ToS
+ * 
+ * UPDATE: Algorithm now works properly for all LIMIT orders. It still doesn't
+ * work for MARKET orders as it is incorrectly sorting the MARKET orders on the
+ * bottom of the order stack
  */
 function reconciliate() {
   const [topBuyer] = orderBook.buy;
@@ -127,11 +131,11 @@ function reconciliate() {
   }
 
   if (topBuyerTotal <= 0) {
-    console.log('buyer was bought out. Trying the next buyer');
+    // console.log('buyer was bought out. Trying the next buyer');
     removeTradeFrom('buy');
     reconciliate();
   } else if (topBuyer.total !== topBuyerTotal) {
-    console.log(`buyer was partially filled. Waiting for next trades...`);
+    // console.log(`buyer was partially filled. Waiting for next trades...`);
     updateTradeOrderAt('buy', {...topBuyer, total: topBuyerTotal});
   }
 }
