@@ -235,16 +235,13 @@ const orders: Array<StockOrder> = [
  * to produce a simulated stock market stream where orders are being received every
  * 2 secs.
  */
-const ordersSub = zip(interval(200), from(orders))
+const ordersSub = zip(interval(2000), from(orders))
   .pipe(map(([, o]) => o))
   .subscribe(
     flow([
       addStockOrder,
-      // reconciliate
+      reconciliate
     ]),
     () => {},
-    () => {
-      reconciliate();
-      console.log(`OrderBook: `, orderBook);
-    }
+    () => console.log(`OrderBook: `, orderBook);
   );
